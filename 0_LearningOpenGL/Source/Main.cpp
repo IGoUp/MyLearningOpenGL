@@ -45,6 +45,24 @@ int main(int argc, char* arv[])
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // 定义三角形在正则坐标下的坐标值
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+
+    unsigned int VBO;
+    // 生成 1 个 buffer，buffer index 赋值给 VBO
+    glGenBuffers(1, &VBO);
+    // 指定 VBO 对应的 buffer 类型为 GL_ARRAY_BUFFER
+    // 将 VBO 对应的 buffer 绑定到上下文，后续的操作都是基于当前 buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // 把的顶点数据复制到 buffer 中
+    // GL_STATIC_DRAW 表示数据不会或几乎不会改变
+    // 若指定为 GL_DYNAMIC_DRAW 或 GL_STREAM_DRAW，GPU 会把数据放在能够高速写入的内存部分
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
     {
