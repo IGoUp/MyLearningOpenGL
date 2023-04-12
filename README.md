@@ -78,7 +78,29 @@ OpenGL 的大部分工作都是关于把 3D 坐标转变为 2D 像素：
   - 向 buffer 填入数据
 - 现在，顶点数据储存在 GPU 内存中，用 VBO 这个对象进行管理
 
+### 顶点着色器
 
+```glsl
+#version 330 core
+layout (location = 0) in vec3 aPos;
 
+void main()
+{
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+```
 
+- `in`：表示输入
+- `layout (location = 0)`：设定了输入变量的位置值？
+- `vec3`：声明变量类型为 3 维向量
+- `gl_Position`：顶点着色器的输出
+
+在实际的程序中，输入数据通常不是正则坐标，需要在这里进行转换。
+
+### 编译着色器
+
+- 字符串硬编码 shader 源码
+- 创建 shader 及其对象
+- 编译 shader
+- 获取 shader 编译失败后的错误信息（可省略）
 

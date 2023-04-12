@@ -63,6 +63,33 @@ int main(int argc, char* arv[])
     // 若指定为 GL_DYNAMIC_DRAW 或 GL_STREAM_DRAW，GPU 会把数据放在能够高速写入的内存部分
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // 使用字符串硬编码 shader 源码
+    const char* vertexShaderSource = "#version 330 core\n"
+        "layout (location = 0) in vec3 aPos;\n"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "}\0";
+
+    // 创建 Shader 及其对象
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+    // 将 Shader 源码绑定到 shader 对象
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    // 编译 shader
+    glCompileShader(vertexShader);
+
+    // 可省略，用于获取 shader 编译失败后的错误信息
+    int  success; // GL_TRUE: 1, GL_FALSE: 0
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
     {
