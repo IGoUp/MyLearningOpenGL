@@ -120,3 +120,19 @@ void main()
 
 类似顶点着色器步骤编译片段着色器。
 
+### 链接并使用 shader program
+
+要将 shader 链接至 shader program，然后在程序运行的时候使用 program，这样，被使用的 program 才会在渲染的过程中被调用。
+
+当链接 shader 至一个 program 的时候，它会把每个 shader 的输出链接到下个 shader 的输入。当输出和输入不匹配的时候，你会得到一个链接错误。
+
+链接并使用 shader program 的步骤：
+
+- 创建 shader program
+- attach 并 link 2 个 shader
+- 可省略，用于获取 shader program link 失败后的错误信息
+- 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
+- 删除 shader
+
+
+

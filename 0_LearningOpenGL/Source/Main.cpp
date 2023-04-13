@@ -103,6 +103,24 @@ int main(int argc, char* arv[])
     // 编译 shader
     glCompileShader(fragShader);
 
+    // 创建 shader program
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    // attach 并 link 2 个 shader
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragShader);
+    glLinkProgram(shaderProgram);
+    // 可省略，用于获取 shader program link 失败后的错误信息
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
+    }
+    // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
+    glUseProgram(shaderProgram);
+    // 删除 shader
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragShader);
 
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
