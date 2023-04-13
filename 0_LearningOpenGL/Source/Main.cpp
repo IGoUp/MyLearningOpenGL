@@ -90,6 +90,20 @@ int main(int argc, char* arv[])
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
+    // 片段着色器
+    const char* fragShaderSource = "#version 330 core\n"
+        "out vec4 fragColor;"
+        "void main()\n"
+        "{\n"
+        "   fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "}\0";
+    unsigned int fragShader;
+    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
+    // 编译 shader
+    glCompileShader(fragShader);
+
+
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
     {
