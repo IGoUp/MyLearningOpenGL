@@ -15,7 +15,7 @@ static void processInput(GLFWwindow* window)
     }
 }
 
-int main(int argc, char* arv[])
+static GLFWwindow* createWindow()
 {
     // 初始化 GLFW
     glfwInit();
@@ -30,7 +30,7 @@ int main(int argc, char* arv[])
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return nullptr;
     }
     glfwMakeContextCurrent(window);
 
@@ -38,31 +38,18 @@ int main(int argc, char* arv[])
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        return nullptr;
     }
 
     // 设定 viewport 的 size
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // 定义三角形在正则坐标下的坐标值
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
+    return window;
+}
 
-    unsigned int VBO;
-    // 生成 1 个 buffer，buffer index 赋值给 VBO
-    glGenBuffers(1, &VBO);
-    // 指定 VBO 对应的 buffer 类型为 GL_ARRAY_BUFFER
-    // 将 VBO 对应的 buffer 绑定到上下文，后续的操作都是基于当前 buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // 把的顶点数据复制到 buffer 中
-    // GL_STATIC_DRAW 表示数据不会或几乎不会改变
-    // 若指定为 GL_DYNAMIC_DRAW 或 GL_STREAM_DRAW，GPU 会把数据放在能够高速写入的内存部分
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+static unsigned int createVertexShader()
+{
     // 使用字符串硬编码 shader 源码
     const char* vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
@@ -90,6 +77,11 @@ int main(int argc, char* arv[])
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
+    return vertexShader;
+}
+
+static unsigned int createFragShader()
+{
     // 片段着色器
     const char* fragShaderSource = "#version 330 core\n"
         "out vec4 fragColor;"
@@ -103,6 +95,21 @@ int main(int argc, char* arv[])
     // 编译 shader
     glCompileShader(fragShader);
 
+    // 可省略，用于获取 shader 编译失败后的错误信息
+    int  success; // GL_TRUE: 1, GL_FALSE: 0
+    char infoLog[512];
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    return fragShader;
+}
+
+static void createShaderProgram(unsigned int vertexShader, unsigned int fragShader)
+{
     // 创建 shader program
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
@@ -110,7 +117,10 @@ int main(int argc, char* arv[])
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragShader);
     glLinkProgram(shaderProgram);
+
     // 可省略，用于获取 shader program link 失败后的错误信息
+    int  success; // GL_TRUE: 1, GL_FALSE: 0
+    char infoLog[512];
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
@@ -121,6 +131,39 @@ int main(int argc, char* arv[])
     // 删除 shader
     glDeleteShader(vertexShader);
     glDeleteShader(fragShader);
+}
+
+
+int main(int argc, char* arv[])
+{
+    GLFWwindow* window = createWindow();
+    unsigned int vertexShader = createVertexShader();
+    unsigned int fragShader = createFragShader();
+    createShaderProgram(vertexShader, fragShader);
+
+    // 定义三角形在正则坐标下的坐标值
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+
+    // 创建 VAO
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    // 将 VAO 绑定到当前上下文
+    glBindVertexArray(VAO);
+
+    unsigned int VBO;
+    // 生成 1 个 buffer，buffer index 赋值给 VBO
+    glGenBuffers(1, &VBO);
+    // 指定 VBO 对应的 buffer 类型为 GL_ARRAY_BUFFER
+    // 将 VBO 对应的 buffer 绑定到上下文，后续的操作都是基于当前 buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // 把的顶点数据复制到 buffer 中
+    // GL_STATIC_DRAW 表示数据不会或几乎不会改变
+    // 若指定为 GL_DYNAMIC_DRAW 或 GL_STREAM_DRAW，GPU 会把数据放在能够高速写入的内存部分
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // 如何解释内存中的顶点数据，以及如何将顶点数据链接到 shader 的属性上
     // @param0：标识当前 vertex 的属性，相当于将当前 vertex 数据传到 vertex shader 中的 location = 0 指定的变量 aPos
@@ -150,4 +193,5 @@ int main(int argc, char* arv[])
 
     return 0;
 }
+
 
