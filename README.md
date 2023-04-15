@@ -91,7 +91,7 @@ void main()
 ```
 
 - `in`：表示输入
-- `layout (location = 0)`：设定了输入变量的位置值？
+- `layout (location = 0)`：表示变量 aPos 的值来自于 VBO 的属性 0，关于后续关于 VBO 的属性 0，后续“链接顶点属性”会展开。
 - `vec3`：声明变量类型为 3 维向量
 - `gl_Position`：顶点着色器的输出
 
@@ -133,6 +133,27 @@ void main()
 - 可省略，用于获取 shader program link 失败后的错误信息
 - 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
 - 删除 shader
+
+### 链接顶点属性
+
+有了顶点数据、顶点着色器和片段着色器，GPU 还需要知道如何解释内存中的顶点数据，以及如何将顶点数据链接到 shader 上：
+
+```glsl
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+```
+
+- @param0：标识当前 vertex 的属性，相当于将当前 vertex 数据传到 vertex shader 中的 location = 0 指定的变量 aPos
+- @param1：指定一个 vertex 的元素数量为 3
+- @param2：指定 vertex 的类型为 float
+- @param3：表明 vertex 数据不需要被标准化到 [0, 1]
+- @param4：步长，表明每组 vertex 属性的元素个数，比如 {x, y, z, r, g, b, a} 的时候为 7
+- @param5：偏移，表明 vertex 从哪个位置开始取，比如 {x, y, z, r, g, b, a} 如果想去颜色就设为 3
+
+顶点属性默认关闭，需要将其启动：
+
+```glsl
+glEnableVertexAttribArray(0);
+```
 
 
 

@@ -122,6 +122,17 @@ int main(int argc, char* arv[])
     glDeleteShader(vertexShader);
     glDeleteShader(fragShader);
 
+    // 如何解释内存中的顶点数据，以及如何将顶点数据链接到 shader 的属性上
+    // @param0：标识当前 vertex 的属性，相当于将当前 vertex 数据传到 vertex shader 中的 location = 0 指定的变量 aPos
+    // @param1：指定一个 vertex 的元素数量为 3
+    // @param2：指定 vertex 的类型为 float
+    // @param3：表明 vertex 数据不需要被标准化到 [0, 1]
+    // @param4：步长，表明每组 vertex 属性的元素个数，比如 {x, y, z, r, g, b, a} 的时候为 7
+    // @param5：偏移，表明 vertex 从哪个位置开始取，比如 {x, y, z, r, g, b, a} 如果想去颜色就设为 3
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // 启用顶点属性
+    glEnableVertexAttribArray(0);
+
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
     {
