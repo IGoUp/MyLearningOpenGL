@@ -155,5 +155,21 @@ glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 glEnableVertexAttribArray(0);
 ```
 
+### 顶点数组对象（VAO）
 
+每个物体在调用渲染操作之前，都需要如下操作：
+
+- 绑定 VBO：glBindBuffer
+- 将顶点数据传入 VBO：glBufferData
+- 链接顶点属性：glVertexAttribPointer
+- 启动顶点属性：glEnableVertexAttribArray
+
+当物体数量很多，比如有很多个三角形，那么 VBO 数量就会很多，每次画三角形之前，都需要重新设置 VBO，这将会非常痛苦。于是，引入 VAO，VAO 会存储多个 VBO，后续可以通过索引来访问不同的 VBO。下图中 VAO2 将 VBO2 中的 position 信息放到索引 0，将 VBO2 的 color 信息放到索引 1：
+
+![img](README.assets/vertex_array_objects.png)
+
+VAO 创建后，遇到以下调用就会自动将信息记录下来：
+
+- glEnableVertexAttribArray/glDisableVertexAttribArray
+- glVertexAttribPointer
 

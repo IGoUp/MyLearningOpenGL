@@ -188,11 +188,20 @@ int main(int argc, char* arv[])
         // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
         glUseProgram(shaderProgram);
 
+        // 绑定 VAO，在这里其实不绑定也行，因为我们只有一个 VAO
+        // 实际的项目中会有多个 VAO，就需要根据不同的逻辑绑定不同的 VAO
+        glBindVertexArray(VAO);
+        // @param2：表示索引 VAO 的第 0 个位置的 VBO
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // 释放资源
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteProgram(shaderProgram);
     glfwTerminate();
 
     return 0;
