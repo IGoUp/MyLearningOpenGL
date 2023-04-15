@@ -108,7 +108,7 @@ static unsigned int createFragShader()
     return fragShader;
 }
 
-static void createShaderProgram(unsigned int vertexShader, unsigned int fragShader)
+static unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragShader)
 {
     // 创建 shader program
     unsigned int shaderProgram;
@@ -126,11 +126,12 @@ static void createShaderProgram(unsigned int vertexShader, unsigned int fragShad
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
     }
-    // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
-    glUseProgram(shaderProgram);
+
     // 删除 shader
     glDeleteShader(vertexShader);
     glDeleteShader(fragShader);
+
+    return shaderProgram;
 }
 
 
@@ -139,7 +140,7 @@ int main(int argc, char* arv[])
     GLFWwindow* window = createWindow();
     unsigned int vertexShader = createVertexShader();
     unsigned int fragShader = createFragShader();
-    createShaderProgram(vertexShader, fragShader);
+    unsigned int shaderProgram = createShaderProgram(vertexShader, fragShader);
 
     // 定义三角形在正则坐标下的坐标值
     float vertices[] = {
@@ -183,6 +184,9 @@ int main(int argc, char* arv[])
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
+        glUseProgram(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
