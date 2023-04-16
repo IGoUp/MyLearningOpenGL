@@ -173,3 +173,10 @@ VAO 创建后，遇到以下调用就会自动将信息记录下来：
 - glEnableVertexAttribArray/glDisableVertexAttribArray
 - glVertexAttribPointer
 
+### 索引缓冲对象（IBO/EBO）
+
+绘制多个三角形的时候，有些顶点会被重复使用，为了节省空间，引入 IBO/EBO，通过 index 来访问顶点。
+
+另外，IBO/EBO 也会存储在 VAO 中：
+
+![img](README.assets/vertex_array_objects_ebo.png)

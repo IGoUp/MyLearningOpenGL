@@ -144,9 +144,19 @@ int main(int argc, char* arv[])
 
     // 定义三角形在正则坐标下的坐标值
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
+        0.5f, 0.5f, 0.0f,   // 右上角
+        0.5f, -0.5f, 0.0f,  // 右下角
+        -0.5f, -0.5f, 0.0f, // 左下角
+        -0.5f, 0.5f, 0.0f   // 左上角
+    };
+
+    unsigned int indices[] = {
+        // 注意索引从0开始!
+        // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+        // 这样可以由下标代表顶点组合成矩形
+
+        0, 1, 3, // 第一个三角形
+        1, 2, 3  // 第二个三角形
     };
 
     // 创建 VAO
@@ -166,6 +176,11 @@ int main(int argc, char* arv[])
     // 若指定为 GL_DYNAMIC_DRAW 或 GL_STREAM_DRAW，GPU 会把数据放在能够高速写入的内存部分
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     // 如何解释内存中的顶点数据，以及如何将顶点数据链接到 shader 的属性上
     // @param0：标识当前 vertex 的属性，相当于将当前 vertex 数据传到 vertex shader 中的 location = 0 指定的变量 aPos
     // @param1：指定一个 vertex 的元素数量为 3
@@ -176,6 +191,9 @@ int main(int argc, char* arv[])
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     // 启用顶点属性
     glEnableVertexAttribArray(0);
+
+    // 线框模式
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
@@ -192,7 +210,8 @@ int main(int argc, char* arv[])
         // 实际的项目中会有多个 VAO，就需要根据不同的逻辑绑定不同的 VAO
         glBindVertexArray(VAO);
         // @param2：表示索引 VAO 的第 0 个位置的 VBO
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -201,6 +220,7 @@ int main(int argc, char* arv[])
     // 释放资源
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     glDeleteProgram(shaderProgram);
     glfwTerminate();
 
