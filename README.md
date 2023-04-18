@@ -269,6 +269,16 @@ void main()
 }
 ```
 
+## 添加顶点属性：color
+
+- 顶点数据添加 color 数据
+- vertex shader 添加 color 输入以接收新的顶点属性
+- vertex shader 添加 color 输出以向 fragment shader 传入 color 数据
+- fragment shader 添加 color 输入
+- 链接 color 顶点属性，将 VBO 中的 color 数据 map 到 vertex shader 中
+
+顶点赋予了不同颜色以后，三角形的中间部分会根据重心坐标（barycentric），对颜色进行插值。
+
 
 
 

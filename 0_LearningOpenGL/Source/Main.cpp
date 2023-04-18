@@ -53,9 +53,13 @@ static unsigned int createVertexShader()
     // 使用字符串硬编码 shader 源码
     const char* vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
+        "layout (location = 1) in vec3 aColor;\n"
+        // vertex shader 将 color 输出，以便后面 fragment shader 使用
+        "out vec3 ourColor;\n"
         "void main()\n"
         "{\n"
         "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "   ourColor = aColor;\n"
         "}\0";
 
     // 创建 Shader 及其对象
@@ -85,10 +89,11 @@ static unsigned int createFragShader()
     // 片段着色器
     const char* fragShaderSource = "#version 330 core\n"
         "out vec4 fragColor;"
-        "uniform vec4 ourColor;"
+        "in vec3 ourColor;"
+        "uniform float ratio;"
         "void main()\n"
         "{\n"
-        "   fragColor = ourColor;\n"
+        "   fragColor = vec4(ourColor * ratio, 1.0);\n"
         "}\0";
     unsigned int fragShader;
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -145,10 +150,10 @@ int main(int argc, char* arv[])
 
     // 定义三角形在正则坐标下的坐标值
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,   // 右上角
-        0.5f, -0.5f, 0.0f,  // 右下角
-        -0.5f, -0.5f, 0.0f, // 左下角
-        -0.5f, 0.5f, 0.0f   // 左上角
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // 右上角
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // 右下角
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // 左下角
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f // 左上角
     };
 
     unsigned int indices[] = {
@@ -189,9 +194,12 @@ int main(int argc, char* arv[])
     // @param3：表明 vertex 数据不需要被标准化到 [0, 1]
     // @param4：步长，表明每组 vertex 属性的元素个数，比如 {x, y, z, r, g, b, a} 的时候为 7
     // @param5：偏移，表明 vertex 从哪个位置开始取，比如 {x, y, z, r, g, b, a} 如果想去颜色就设为 3
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     // 启用顶点属性
     glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // 线框模式
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -208,10 +216,10 @@ int main(int argc, char* arv[])
         glUseProgram(shaderProgram);
 
         float timeValue = glfwGetTime();
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        float ratio = (sin(timeValue) / 2.0f) + 0.5f;
+        int ratioLocation = glGetUniformLocation(shaderProgram, "ratio");
         // glUniform4f 之前必须先调用 glUseProgram，因为需要在当前激活的 shader program 中设置 uniform
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        glUniform1f(ratioLocation, ratio);
 
         // 绑定 VAO，在这里其实不绑定也行，因为我们只有一个 VAO
         // 实际的项目中会有多个 VAO，就需要根据不同的逻辑绑定不同的 VAO
