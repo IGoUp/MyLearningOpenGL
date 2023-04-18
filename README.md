@@ -180,3 +180,96 @@ VAO 创建后，遇到以下调用就会自动将信息记录下来：
 另外，IBO/EBO 也会存储在 VAO 中：
 
 ![img](README.assets/vertex_array_objects_ebo.png)
+
+## Shader
+
+### GLSL
+
+Shader 的典型结构：
+
+- in：输入变量，也叫做顶点属性
+- out
+- uniform
+- main
+
+### 数据类型
+
+- vec<n>: float
+- bvec<n>: bool
+- ivec<n>: int
+- uvec<n>: uint
+- dvec<n>: double
+
+获取 vec4 的分量的方式：
+
+- `.x` `.y` `.z` `.w`
+- 颜色：`rgba`
+- 纹理坐标：`stpq`
+
+向量的重组：
+
+```glsl
+vec2 v2;
+vec4 v4 = v2.xyxx;
+vec3 v3 = v4.zyw;
+vec4 v4_ = v2.xxxx + v3.yxzy;
+
+vec2 foo1 = vec2(0.5, 0.7);
+vec4 bar1 = vec4(foo1, 0.0, 0.0);
+vec4 bar2 = vec4(bar1.xyz, 1.0);
+```
+
+### 输入和输出
+
+shader 使用 `in` 和 `out` 设定输入和输出，只要一个输出变量与下一个 shader 阶段的输入匹配，就能往下传递。但在 vertex shader 和 fragment shader 会有点特殊。
+
+vertex shader 应该就收一种特殊形式的输入，否则效率会很低。 vertex shader 的输入的特殊在于：它接收顶点数据作为输入。为了定义顶点数据如何管理，我们使用 `layout(location = xxx)` 来指定输入变量，这样我们在 VBO 上的顶点属性就可以映射到 shader 中。
+
+> 也可以使用 `glGetAttributeLocation` 来查询属性位置值，比如：
+>
+> ```glsl
+> #version 150 core
+> in vec2 position;
+> void main()
+> {
+>     gl_Position = vec4(position, 0.0, 1.0);
+> }
+> ```
+>
+> ```c
+> unsigned int VBO;
+> glGenBuffers(1, &VBO);
+> glBindBuffer(GL_ARRAY_BUFFER, VBO);
+> glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+> 
+> // 获取 shader program 中的 position 属性的索引
+> GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+> glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+> glEnableVertexAttribArray(posAttrib);
+> ```
+
+fragment shader 的特殊在于：它的输出是一个 `vec4` 来表示颜色，如果没有定义颜色，OpenGL 会将物体渲染成黑色。
+
+当我们打算从一个 shader 向另一个 shader 发送数据时，我们必须在发送方 shader 声明一个输出，在接收方 shader 声明一个类似的输入，当类型和名字都一样的时候，OpenGL 会把两个变量链接在一起。
+
+### Uniform
+
+uniform 是一种从 CPU 向 GPU 中 shader 发送数据的方式。uniform 与顶点属性的区别：
+
+- uniform 是全局的，uniform 变量在每个 shader program 中都是独一无二，它可以被 shader program 的任意 shader 在任意阶段访问
+- uniform 在设置后一直保存着数据，直到被更新
+
+```glsl
+#version 330 core
+out vec4 FragColor;
+uniform vec4 ourColor; // 在OpenGL程序代码中设定这个变量
+void main()
+{
+    FragColor = ourColor;
+}
+```
+
+
+
+
+

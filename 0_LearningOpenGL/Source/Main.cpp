@@ -85,9 +85,10 @@ static unsigned int createFragShader()
     // 片段着色器
     const char* fragShaderSource = "#version 330 core\n"
         "out vec4 fragColor;"
+        "uniform vec4 ourColor;"
         "void main()\n"
         "{\n"
-        "   fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "   fragColor = ourColor;\n"
         "}\0";
     unsigned int fragShader;
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -193,7 +194,7 @@ int main(int argc, char* arv[])
     glEnableVertexAttribArray(0);
 
     // 线框模式
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // 循环处理输入并渲染
     while (!glfwWindowShouldClose(window))
@@ -205,6 +206,12 @@ int main(int argc, char* arv[])
 
         // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
         glUseProgram(shaderProgram);
+
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+        // glUniform4f 之前必须先调用 glUseProgram，因为需要在当前激活的 shader program 中设置 uniform
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
         // 绑定 VAO，在这里其实不绑定也行，因为我们只有一个 VAO
         // 实际的项目中会有多个 VAO，就需要根据不同的逻辑绑定不同的 VAO
