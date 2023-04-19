@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "Shader.h"
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -48,105 +49,10 @@ static GLFWwindow* createWindow()
     return window;
 }
 
-static unsigned int createVertexShader()
-{
-    // 使用字符串硬编码 shader 源码
-    const char* vertexShaderSource = "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec3 aColor;\n"
-        // vertex shader 将 color 输出，以便后面 fragment shader 使用
-        "out vec3 ourColor;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-        "   ourColor = aColor;\n"
-        "}\0";
-
-    // 创建 Shader 及其对象
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    // 将 Shader 源码绑定到 shader 对象
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    // 编译 shader
-    glCompileShader(vertexShader);
-
-    // 可省略，用于获取 shader 编译失败后的错误信息
-    int  success; // GL_TRUE: 1, GL_FALSE: 0
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    return vertexShader;
-}
-
-static unsigned int createFragShader()
-{
-    // 片段着色器
-    const char* fragShaderSource = "#version 330 core\n"
-        "out vec4 fragColor;"
-        "in vec3 ourColor;"
-        "uniform float ratio;"
-        "void main()\n"
-        "{\n"
-        "   fragColor = vec4(ourColor * ratio, 1.0);\n"
-        "}\0";
-    unsigned int fragShader;
-    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragShader, 1, &fragShaderSource, NULL);
-    // 编译 shader
-    glCompileShader(fragShader);
-
-    // 可省略，用于获取 shader 编译失败后的错误信息
-    int  success; // GL_TRUE: 1, GL_FALSE: 0
-    char infoLog[512];
-    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    return fragShader;
-}
-
-static unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragShader)
-{
-    // 创建 shader program
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
-    // attach 并 link 2 个 shader
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragShader);
-    glLinkProgram(shaderProgram);
-
-    // 可省略，用于获取 shader program link 失败后的错误信息
-    int  success; // GL_TRUE: 1, GL_FALSE: 0
-    char infoLog[512];
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
-    }
-
-    // 删除 shader
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragShader);
-
-    return shaderProgram;
-}
-
-
 int main(int argc, char* arv[])
 {
     GLFWwindow* window = createWindow();
-    unsigned int vertexShader = createVertexShader();
-    unsigned int fragShader = createFragShader();
-    unsigned int shaderProgram = createShaderProgram(vertexShader, fragShader);
+    Shader shader("Shader/VertexShader.vert", "Shader/FragmentShader.frag");
 
     // 定义三角形在正则坐标下的坐标值
     float vertices[] = {
@@ -213,13 +119,12 @@ int main(int argc, char* arv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         // 使用 program，后续每个 Shader 调用和渲染调用都会用到这个 program
-        glUseProgram(shaderProgram);
+        shader.use();
 
         float timeValue = glfwGetTime();
         float ratio = (sin(timeValue) / 2.0f) + 0.5f;
-        int ratioLocation = glGetUniformLocation(shaderProgram, "ratio");
         // glUniform4f 之前必须先调用 glUseProgram，因为需要在当前激活的 shader program 中设置 uniform
-        glUniform1f(ratioLocation, ratio);
+        shader.setFloat("ratio", ratio);
 
         // 绑定 VAO，在这里其实不绑定也行，因为我们只有一个 VAO
         // 实际的项目中会有多个 VAO，就需要根据不同的逻辑绑定不同的 VAO
@@ -236,7 +141,7 @@ int main(int argc, char* arv[])
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shaderProgram);
+    shader.release();
     glfwTerminate();
 
     return 0;
